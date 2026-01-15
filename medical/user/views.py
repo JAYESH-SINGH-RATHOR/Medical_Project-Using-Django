@@ -105,4 +105,94 @@ def medicine_list(request):
 
 def medicine_detail(request, id):
     medicine = Medicine.objects.get(id=id)
-    return render(request, "user/medicinedetails.html", {"medicine": medicine})
+    details = MedicineDetails.objects.filter(medicine=medicine)
+    return render(request, "user/medicinedetails.html",{"medicine": medicine, "details": details})
+
+# Add to cart
+def add_to_cart(request, id):
+    medicine = get_object_or_404(Medicine, id=id)
+    cart = request.session.get('cart', {})
+
+    if str(id) in cart:
+        cart[str(id)]['quantity'] += 1
+    else:
+        cart[str(id)] = {
+            'name': medicine.title,
+            'price': float(medicine.details.first().price),
+            'quantity': 1
+        }
+
+    request.session['cart'] = cart
+    return redirect('cart')
+
+
+# Cart page
+def cart_view(request):
+    cart = request.session.get('cart', {})
+    total = 0
+
+    for item in cart.values():
+        item['item_total'] = item['price'] * item['quantity']  # ✅ per item total
+        total += item['item_total']
+
+    request.session['cart'] = cart
+    return render(request, 'user/AddCart.html', {
+        'cart': cart,
+        'total': total
+    })
+
+# Increase quantity
+def increase_quantity(request, id):
+    cart = request.session.get('cart', {})
+    if str(id) in cart:
+        cart[str(id)]['quantity'] += 1
+    request.session['cart'] = cart
+    return redirect('cart')
+
+
+# Decrease quantity
+def decrease_quantity(request, id):
+    cart = request.session.get('cart', {})
+    if str(id) in cart:
+        cart[str(id)]['quantity'] -= 1
+        if cart[str(id)]['quantity'] <= 0:
+            del cart[str(id)]
+    request.session['cart'] = cart
+    return redirect('cart')
+
+# Place order
+def place_order(request):
+    cart = request.session.get('cart')
+
+    if not cart:
+        return redirect('cart')
+
+    total = sum(item['price'] * item['quantity'] for item in cart.values())
+    request.session['order_total'] = total
+
+    return redirect('address_page')
+
+
+def address_page(request):
+    if request.method == "POST":
+        request.session['address'] = {
+            "name": request.POST['name'],
+            "phone": request.POST['phone'],
+            "location": request.POST['location'],
+            "building": request.POST['building'],
+            "address": request.POST['address'],
+            "pincode": request.POST['pincode'],
+        }
+        return redirect('payment_page')
+
+    return render(request, 'user/address.html')
+
+def payment_page(request):
+    total = request.session.get('order_total')
+    return render(request, 'user/payment.html', {'total': total})
+
+def order_success(request):
+    total = request.session.get('order_total')
+    request.session.pop('cart', None)
+
+    return render(request, 'user/success.html', {'total': total})

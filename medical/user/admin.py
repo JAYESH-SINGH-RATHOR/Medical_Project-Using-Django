@@ -9,6 +9,9 @@ class MedicineAdmin(admin.ModelAdmin):
 
 admin.site.register(Medicine, MedicineAdmin)
 
+class MedicineDetailsAdmin(admin.ModelAdmin):
+    list_display = ['id', 'medicine', 'description', 'price', 'expdate', 'manufacturer']
+admin.site.register(MedicineDetails , MedicineDetailsAdmin)
 
 # -------------------------
 # User Admin

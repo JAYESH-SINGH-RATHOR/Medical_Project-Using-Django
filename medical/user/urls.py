@@ -13,4 +13,14 @@ urlpatterns = [
     path('medicine/', views.medicine_list, name='medicine_list'),
     path('medicine/<int:id>/', views.medicine_detail, name='medicine_detail'),
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('cart/', views.cart_view, name='cart'),
+    path('cart/add/<int:id>/', views.add_to_cart, name='add_to_cart'),
+    path('cart/increase/<int:id>/', views.increase_quantity, name='increase_quantity'),
+    path('cart/decrease/<int:id>/', views.decrease_quantity, name='decrease_quantity'),
+     path('place-order/', views.place_order, name='place_order'),
+    path('address/', views.address_page, name='address_page'),
+    path('payment/', views.payment_page, name='payment_page'),
+    path('success/', views.order_success, name='order_success')
+
+
 ]
